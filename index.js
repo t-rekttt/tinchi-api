@@ -188,8 +188,6 @@ getTkb = (data = null) => {
       });
     })
     .then($ => {
-      console.log(parseSelector($));
-
       let tkb = $('#Table4').find('.tableborder');
       tkb.find('br').replaceWith('\n');
       // console.log(tkb.html());
