@@ -17,7 +17,15 @@ request = request.defaults({
   }
 });
 
-init = () => request('http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info/');
+init = (options = {}) => {
+  let jar = request.jar();
+
+  request('http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info/', {
+    ...options,
+    jar
+  })
+  .then(res => jar);
+}
 
 parseInitialFormData = ($) => {
   let form = $('form');
@@ -62,9 +70,9 @@ parseSelector = ($) => {
   return data;
 }
 
-login = (username, password) => {
+login = (username, password, options = {}) => {
   let endpoint = `${API}/CMCSoft.IU.Web.info/login.aspx`
-  return request(endpoint)
+  return request(endpoint, options)
     .then(parseInitialFormData)
     .then(data => {
       return {
@@ -78,8 +86,8 @@ login = (username, password) => {
     })
 }
 
-getTkbDkh = () => {
-  return request.get(`${API}/CMCSoft.IU.Web.info/StudyRegister/StudyRegister.aspx`)
+getTkbDkh = (options = {}) => {
+  return request.get(`${API}/CMCSoft.IU.Web.info/StudyRegister/StudyRegister.aspx`, options)
     .then($ => {
       let tkb = $('#Table4').find('.tableborder');
       tkb.find('br').replaceWith('\n');
@@ -104,7 +112,7 @@ getTkbDkh = () => {
     });
 }
 
-parseTkbDkh = (data) => {
+parseTkbDkh = (data, options = {}) => {
   data = data.slice(1, data.length-1);
 
   data = data.map(rows => {
@@ -173,14 +181,15 @@ parseTkbDkh = (data) => {
   return data;
 }
 
-getTkb = (data = null) => {
+getTkb = (data = null, options = {}) => {
   let endpoint = `${API}/CMCSoft.IU.Web.Info/Reports/Form/StudentTimeTable.aspx`;
 
-  return request.get(endpoint)
+  return request.get(endpoint, options)
     .then($ => {
       if (!data) return $;
 
       return request.post(endpoint, {
+        ...options,
         form: {
           ...parseInitialFormData($),
           ...data
