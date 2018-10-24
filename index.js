@@ -11,7 +11,6 @@ request = request.defaults({
 
     return $;
   },
-  jar: true,
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
   }
@@ -20,7 +19,7 @@ request = request.defaults({
 init = (options = {}) => {
   let jar = request.jar();
 
-  request('http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info/', {
+  return request('http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info/', {
     ...options,
     jar
   })
