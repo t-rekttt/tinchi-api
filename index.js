@@ -288,4 +288,4 @@ parseTkb = (data) => {
   return data;
 }
 
-module.exports = { init, login, getTkbDkh, parseTkbDkh, getTkb, parseTkb }
+module.exports = { init, login, getTkbDkh, parseTkbDkh, getTkb, parseTkb, parseSelector, parseInitialFormData }
