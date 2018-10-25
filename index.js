@@ -13,7 +13,8 @@ request = request.defaults({
   },
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
-  }
+  },
+  jar: true
 });
 
 init = (options = {}) => {
@@ -185,7 +186,7 @@ getTkb = (data = null, options = {}) => {
 
   return request.get(endpoint, options)
     .then($ => {
-      if (!data) return $;
+      if (!data) return { data: $, options: parseSelector($) };
 
       return request.post(endpoint, {
         ...options,
@@ -215,7 +216,7 @@ getTkb = (data = null, options = {}) => {
         data.push(rows);
       });
 
-      return data;
+      return { data, options: parseSelector($) };
     });
 }
 
