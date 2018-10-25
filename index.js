@@ -194,30 +194,30 @@ getTkb = (data = null, options = {}) => {
           ...parseInitialFormData($),
           ...data
         }
+      })
+      .then($ => {
+        let tkb = $('#Table4').find('.tableborder');
+        tkb.find('br').replaceWith('\n');
+        // console.log(tkb.html());
+        let rows = tkb.find('tr');
+
+        let data = [];
+
+        rows.each((i, elem) => {
+          cols = $(elem).find('td');
+
+          let rows = [];
+
+          cols.each((i, elem) => {
+            rows.push($(elem).text().trim());
+          }); 
+
+          data.push(rows);
+        });
+
+        return { data, options: parseSelector($) };
       });
     })
-    .then($ => {
-      let tkb = $('#Table4').find('.tableborder');
-      tkb.find('br').replaceWith('\n');
-      // console.log(tkb.html());
-      let rows = tkb.find('tr');
-
-      let data = [];
-
-      rows.each((i, elem) => {
-        cols = $(elem).find('td');
-
-        let rows = [];
-
-        cols.each((i, elem) => {
-          rows.push($(elem).text().trim());
-        }); 
-
-        data.push(rows);
-      });
-
-      return { data, options: parseSelector($) };
-    });
 }
 
 parseTkb = (data) => {
