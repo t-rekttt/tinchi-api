@@ -254,37 +254,39 @@ parseTkb = (data) => {
       .split('Từ ')
       .filter(a => a)
 
-    let matches = date_range_pattern.exec(khoang_thoi_gian[0]);
+    khoang_thoi_gian.map(thoi_gian => {
+      let matches = date_range_pattern.exec(thoi_gian);
 
-    if (matches) {
-      let phases = [];
+      if (matches) {
+        let phases = [];
 
-      let [orig, start, end, g3, phase] = matches;
-      var match1;
+        let [orig, start, end, g3, phase] = matches;
+        var match1;
 
-      do {
-        match1 = time_pattern.exec(khoang_thoi_gian);
+        do {
+          match1 = time_pattern.exec(thoi_gian);
 
-        if (match1) {
-          let [orig1, day, periods, type] = match1;
+          if (match1) {
+            let [orig1, day, periods, type] = match1;
 
-          periods = periods.split(',');
+            periods = periods.split(',');
 
-          phases.push({
-            day,
-            periods,
-            type
-          });
-        };
-      } while (match1);
+            phases.push({
+              day,
+              periods,
+              type
+            });
+          };
+        } while (match1);
 
-      ranges.push({
-        start,
-        end,
-        phases,
-        phase
-      });
-    }
+        ranges.push({
+          start,
+          end,
+          phases,
+          phase
+        });
+      }
+    })
 
     subject.thoi_gian = subject.thoi_gian.join('\n');
     return {...subject, ranges};
