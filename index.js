@@ -245,6 +245,7 @@ parseTkb = (data) => {
 
   const date_range_pattern = /(.+?) đến (.+?):( \((.{1,}?)\))?/;
   const time_pattern = /Thứ ([0-9]) tiết ([0-9,]+?) \((.+?)\)/g;
+  const location_pattern = /\(([0-9])+\)\n(.+)/g;
 
   data = data.map(subject => {
     let ranges = [];
@@ -289,7 +290,29 @@ parseTkb = (data) => {
     })
 
     subject.thoi_gian = subject.thoi_gian.join('\n');
-    return {...subject, ranges};
+
+    let locations = {};
+    
+    if (Array.isArray(subject.dia_diem)) {
+      subject.dia_diem = subject.dia_diem.join('\n');
+      
+      var match;
+
+      do {
+        matches = location_pattern.exec(subject.dia_diem);
+
+        if (matches) {
+          let [orig, period, location] = matches;
+
+          locations[period] = {
+            period,
+            location
+          }
+        };
+      } while (matches);
+    }
+
+    return {...subject, ranges, locations};
   });
 
   return data;
