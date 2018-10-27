@@ -292,7 +292,7 @@ parseTkb = (data) => {
     subject.thoi_gian = subject.thoi_gian.join('\n');
 
     let locations = {};
-    
+
     if (Array.isArray(subject.dia_diem)) {
       subject.dia_diem = subject.dia_diem.join('\n');
       
@@ -302,10 +302,10 @@ parseTkb = (data) => {
         matches = location_pattern.exec(subject.dia_diem);
 
         if (matches) {
-          let [orig, period, location] = matches;
+          let [orig, phase, location] = matches;
 
-          locations[period] = {
-            period,
+          locations[phase] = {
+            phase,
             location
           }
         };
