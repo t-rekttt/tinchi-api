@@ -2,6 +2,7 @@ var request = require('request-promise');
 const cheerio = require('cheerio');
 const md5 = require('md5');
 const API = 'http://dkh.tlu.edu.vn';
+const moment = require('moment');
 
 request = request.defaults({
   transform(body) {
@@ -318,4 +319,60 @@ parseTkb = (data) => {
   return data;
 }
 
-module.exports = { init, login, getTkbDkh, parseTkbDkh, getTkb, parseTkb, parseSelector, parseInitialFormData }
+generateTimeline = (schedule) => {
+  let { generateClasses, generateTimestamps, parseDate } = this;
+  let timeline = [];
+
+  schedule.map(subject => {
+    subject.ranges.map(range => {
+      range.phases.map(phase => {
+        let timestamps = generateClasses(generateTimestamps(parseDate(range.start), parseDate(range.end), parseInt(phase.day)-2), parseInt(phase.periods[0]), parseInt(phase.periods[phase.periods.length-1]));
+
+        timestamps.map(timestamp => {
+          let data = {
+            timestamp,
+            ...subject,
+            phase: range.phase,
+            type: phase.type
+          };
+
+          delete data.ranges;
+
+          timeline.push(data);
+        });
+      });
+    });
+  });
+
+  timeline.sort((a, b) => a.timestamp.start - b.timestamp.start);
+  return timeline;
+}
+
+groupTimelineByDay = (timeline) => {
+  let days = {};
+
+  timeline.map(subject => {
+    let timestamp = subject.timestamp.start.clone().startOf('day');
+
+    if (!days[timestamp]) days[timestamp] = {
+      day: timestamp,
+      subjects: []
+    }
+
+    days[timestamp].subjects.push(subject);
+  });
+
+  let result = Object.values(days)
+
+  result = result.map(day => {
+    if (day.day.clone().isSame(moment(), 'day')) {
+      day.today = true;
+    }
+
+    return day;
+  });
+
+  return result;
+}
+
+module.exports = { init, login, getTkbDkh, parseTkbDkh, getTkb, parseTkb, parseSelector, parseInitialFormData, generateTimeline, groupTimelineByDay }
