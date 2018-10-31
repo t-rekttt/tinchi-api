@@ -2,7 +2,9 @@ var request = require('request-promise');
 const cheerio = require('cheerio');
 const md5 = require('md5');
 const API = 'http://dkh.tlu.edu.vn';
-const moment = require('moment');
+var moment = require('moment-timezone');
+moment.tz('Asia/Ho_Chi_Minh');
+moment.locale('vi-VN');
 const period_board = require('./period_board.js');
 
 request = request.defaults({
