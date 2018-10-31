@@ -324,8 +324,35 @@ parseTkb = (data) => {
   return data;
 }
 
+parseDate = (date) => {
+  return moment(date, "DD/MM/YYYY");
+}
+
+generateTimestamps = (start, end, weekday) => {
+  let res = [];
+  start.weekday(weekday);
+
+  while (start.isSameOrBefore(end)) {
+    if (start.isSameOrBefore(end)) {
+      res.push(start.clone());
+    }
+    start.add(1, 'week');
+  }
+
+
+  return res;
+}
+
+generateClasses = (time_arr, start_period, end_period) => {
+  return time_arr.map(timestamp => {
+    return {
+      start: timestamp.clone().hour(period_board[start_period].start.hour).minute(period_board[start_period].start.minute),
+      end: timestamp.clone().hour(period_board[end_period].end.hour).minute(period_board[end_period].end.minute),
+    };
+  });
+}
+
 generateTimeline = (schedule) => {
-  let { generateClasses, generateTimestamps, parseDate } = this;
   let timeline = [];
 
   schedule.map(subject => {
