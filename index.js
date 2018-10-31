@@ -72,6 +72,11 @@ parseSelector = ($) => {
 }
 
 login = (username, password, options = {}) => {
+  if (!options.shouldNotEncrypt) {
+    password = md5(password);
+    delete options.shouldNotEncrypt;
+  }
+
   let endpoint = `${API}/CMCSoft.IU.Web.info/login.aspx`
   return request(endpoint, options)
     .then(parseInitialFormData)
@@ -79,7 +84,7 @@ login = (username, password, options = {}) => {
       return {
         ...data,
         txtUserName: username,
-        txtPassword: md5(password),
+        txtPassword: password,
       }
     })
     .then(form => {
