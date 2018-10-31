@@ -3,6 +3,7 @@ const cheerio = require('cheerio');
 const md5 = require('md5');
 const API = 'http://dkh.tlu.edu.vn';
 const moment = require('moment');
+const period_board = require('./period_board.js');
 
 request = request.defaults({
   transform(body) {
