@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const md5 = require('md5');
 const API = 'http://dkh.tlu.edu.vn';
 var moment = require('moment-timezone');
-moment.tz('Asia/Ho_Chi_Minh');
+moment.tz.setDefault('Asia/Ho_Chi_Minh');
 moment.locale('vi-VN');
 const period_board = require('./period_board.js');
 
