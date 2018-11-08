@@ -11,5 +11,5 @@ npm install
 
 ### Cài đặt từ npm
 ```
-npm install t-rekttt/tinchi-api
+npm install t-rekttt/tinchi-api --save
 ```
