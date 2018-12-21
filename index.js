@@ -1,1 +1,0 @@
-const { login } = require('./src/dangnhap');
