@@ -1,32 +1,29 @@
-const { request } = require('../../utils');
+const { request, parseSelector, parseInitialFormData } = require('../../utils');
 
 getTkbDkh = (options = {}) => {
   return request.get(`${process.env.API}/StudyRegister/StudyRegister.aspx`, options)
-    .then($ => {
-      let tkb = $('#Table4').find('.tableborder');
-      tkb.find('br').replaceWith('\n');
-      // console.log(tkb.html());
-      let rows = tkb.find('tr');
-
-      let data = [];
-
-      rows.each((i, elem) => {
-        cols = $(elem).find('td');
-
-        let rows = [];
-
-        cols.each((i, elem) => {
-          rows.push($(elem).text().trim());
-        }); 
-
-        data.push(rows);
-      });
-
-      return data;
-    });
 }
 
-parseTkbDkh = (data, options = {}) => {
+parseTkbDkh = ($, options = {}) => {
+  let tkb = $('#Table4').find('.tableborder');
+  tkb.find('br').replaceWith('\n');
+  // console.log(tkb.html());
+  let rows = tkb.find('tr');
+
+  let data = [];
+
+  rows.each((i, elem) => {
+    cols = $(elem).find('td');
+
+    let rows = [];
+
+    cols.each((i, elem) => {
+      rows.push($(elem).text().trim());
+    }); 
+
+    data.push(rows);
+  });
+
   data = data.slice(1, data.length-1);
 
   data = data.map(rows => {
@@ -97,7 +94,9 @@ parseTkbDkh = (data, options = {}) => {
 
 getAndParseTkbDkh = () => {
   return getTkbDkh()
-    .then(parseTkbDkh);
+    .then($ => {
+      return [parseTkbDkh($), parseSelector($), parseInitialFormData($)];
+    });
 }
 
 module.exports = { getTkbDkh, parseTkbDkh, getAndParseTkbDkh }
