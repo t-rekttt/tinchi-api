@@ -1,7 +1,7 @@
 var request = require('request-promise');
 const cheerio = require('cheerio');
 const md5 = require('md5');
-const API = 'http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info';
+const API = 'http://dangky.tlu.edu.vn/CMCSoft.IU.Web.Info';
 var moment = require('moment-timezone');
 moment.tz.setDefault('Asia/Ho_Chi_Minh');
 moment.locale('vi-VN');
@@ -24,7 +24,7 @@ request = request.defaults({
 init = (options = {}) => {
   let jar = request.jar();
 
-  return request(API, {
+  return request(API+'/', {
     ...options,
     jar
   })
@@ -80,7 +80,7 @@ login = (username, password, options = {}) => {
     delete options.shouldNotEncrypt;
   }
 
-  let endpoint = `${API}/login.aspx`
+  let endpoint = `${API}/Login.aspx`
   return request(endpoint, options)
     .then(parseInitialFormData)
     .then(data => {
@@ -96,7 +96,7 @@ login = (username, password, options = {}) => {
 }
 
 getTkbDkh = (options = {}) => {
-  return request.get(`${API}/CMCSoft.IU.Web.info/StudyRegister/StudyRegister.aspx`, options)
+  return request.get(`${API}/StudyRegister/StudyRegister.aspx`, options)
     .then($ => {
       let tkb = $('#Table4').find('.tableborder');
       tkb.find('br').replaceWith('\n');
@@ -410,4 +410,69 @@ groupTimelineByDay = (timeline) => {
   return result;
 }
 
-module.exports = { init, login, getTkbDkh, parseTkbDkh, getTkb, parseTkb, parseSelector, parseInitialFormData, generateTimeline, groupTimelineByDay }
+getStudentMark = (data = null, options = {}) => {
+  let endpoint = `${API}/StudentMark.aspx`;
+
+  return request.get(endpoint, options)
+    .then($ => {
+      if (!data) return { data: $, options: parseSelector($) };
+
+      return request.post(endpoint, {
+        ...options,
+        form: {
+          ...parseInitialFormData($),
+          ...data
+        }
+      })
+      .then(data => {
+        return { data }
+      });
+    })
+    .then(({ data }) => {
+      let $ = data;
+      let tkb = $('#tblMarkDetail').find('.tableborder');
+      tkb.find('br').replaceWith('\n');
+      // console.log(tkb.html());
+      let rows = tkb.find('tr');
+
+      data = [];
+
+      rows.each((i, elem) => {
+        cols = $(elem).find('td');
+
+        let rows = [];
+
+        cols.each((i, elem) => {
+          rows.push($(elem).text().trim());
+        }); 
+
+        data.push(rows);
+      });
+
+      return { data, options: parseSelector($) };
+    });
+}
+
+parseStudentMark = (data) => {
+  data = data.slice(1, data.length - 1);
+
+  data = data.map(rows => {
+    rows = rows.map(cell => {
+      let cells = cell.split('\n');
+
+      cells = cells.map(item => item.trim());
+
+      if (cells.length === 1) cells = cells[0];
+
+      return cells;
+    });
+
+    let [stt, ma_hoc_phan, ten_hoc_phan, so_tin_chi, lan_hoc, lan_thi, diem_thu, la_diem_tong_ket_mon, danh_gia, ma_sinh_vien, qua_trinh, thi, tkhp, diem_chu] = rows;
+
+    return {stt, ma_hoc_phan, ten_hoc_phan, so_tin_chi, lan_hoc, lan_thi, diem_thu, la_diem_tong_ket_mon, danh_gia, ma_sinh_vien, qua_trinh, thi, tkhp, diem_chu}
+  });
+
+  return data;
+}
+
+module.exports = { init, request, login, getTkbDkh, parseTkbDkh, getTkb, parseTkb, parseSelector, parseInitialFormData, generateTimeline, groupTimelineByDay, getStudentMark, parseStudentMark }
