@@ -1,7 +1,7 @@
 var request = require('request-promise');
 const cheerio = require('cheerio');
 const md5 = require('md5');
-const API = 'http://dkh.tlu.edu.vn';
+const API = 'http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info';
 var moment = require('moment-timezone');
 moment.tz.setDefault('Asia/Ho_Chi_Minh');
 moment.locale('vi-VN');
@@ -24,7 +24,7 @@ request = request.defaults({
 init = (options = {}) => {
   let jar = request.jar();
 
-  return request('http://dkh.tlu.edu.vn/CMCSoft.IU.Web.info/', {
+  return request(API, {
     ...options,
     jar
   })
@@ -80,7 +80,7 @@ login = (username, password, options = {}) => {
     delete options.shouldNotEncrypt;
   }
 
-  let endpoint = `${API}/CMCSoft.IU.Web.info/login.aspx`
+  let endpoint = `${API}/login.aspx`
   return request(endpoint, options)
     .then(parseInitialFormData)
     .then(data => {
@@ -191,7 +191,7 @@ parseTkbDkh = (data, options = {}) => {
 }
 
 getTkb = (data = null, options = {}) => {
-  let endpoint = `${API}/CMCSoft.IU.Web.Info/Reports/Form/StudentTimeTable.aspx`;
+  let endpoint = `${API}/Reports/Form/StudentTimeTable.aspx`;
 
   return request.get(endpoint, options)
     .then($ => {
