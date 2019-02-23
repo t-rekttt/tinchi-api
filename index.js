@@ -478,17 +478,14 @@ parseStudentMark = (data) => {
 getExamList = (data = null, options = {}) => {
   let endpoint = `${API}/StudentViewExamList.aspx`;
 
-  let initialFormData = null;
-
   return request.get(endpoint, options)
     .then($ => {
       if (!data) return { data: $, options: parseSelector($) };
 
-      initialFormData = parseInitialFormData($);
       return request.post(endpoint, {
         ...options,
         form: {
-          ...initialFormData,
+          ...parseInitialFormData($),
           ...data
         }
       })
@@ -497,6 +494,7 @@ getExamList = (data = null, options = {}) => {
       });
     })
     .then(({ data }) => {
+      let initialFormData = parseInitialFormData(data);
       let $ = data;
       let tkb = $('#tblCourseList').find('tbody');
 
