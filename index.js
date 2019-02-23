@@ -475,4 +475,71 @@ parseStudentMark = (data) => {
   return data;
 }
 
-module.exports = { init, request, login, getTkbDkh, parseTkbDkh, getTkb, parseTkb, parseSelector, parseInitialFormData, generateTimeline, groupTimelineByDay, getStudentMark, parseStudentMark }
+getExamList = (data = null, options = {}) => {
+  let endpoint = `${API}/StudentViewExamList.aspx`;
+
+  return request.get(endpoint, options)
+    .then($ => {
+      if (!data) return { data: $, options: parseSelector($) };
+
+      return request.post(endpoint, {
+        ...options,
+        form: {
+          ...parseInitialFormData($),
+          ...data
+        }
+      })
+      .then(data => {
+        return { data }
+      });
+    })
+    .then(({ data }) => {
+      let $ = data;
+      let tkb = $('#tblCourseList').find('tbody');
+
+      tkb.find('br').replaceWith('\n');
+
+      // console.log(tkb.html());
+      let rows = tkb.find('tr');
+
+      data = [];
+
+      rows.each((i, elem) => {
+        cols = $(elem).find('td');
+
+        let rows = [];
+
+        cols.each((i, elem) => {
+          rows.push($(elem).text().replace(/[\t\n]/g, '').trim());
+        }); 
+
+        data.push(rows);
+      });
+
+      return { data, options: parseSelector($) };
+    });
+}
+
+parseExamList = (data) => {
+  data = data.slice(1, data.length - 1);
+
+  data = data.map(rows => {
+    rows = rows.map(cell => {
+      let cells = cell.split('\n');
+
+      cells = cells.map(item => item.trim());
+
+      if (cells.length === 1) cells = cells[0];
+
+      return cells;
+    });
+
+    let [stt, ma_hoc_phan, ten_hoc_phan, so_tin_chi, ngay_thi, ca_thi, hinh_thuc_thi, so_bao_danh, phong_thi, ghi_chu] = rows;
+
+    return {stt, ma_hoc_phan, ten_hoc_phan, so_tin_chi, ngay_thi, ca_thi, hinh_thuc_thi, so_bao_danh, phong_thi, ghi_chu}
+  });
+
+  return data;
+}
+
+module.exports = { init, request, login, getTkbDkh, parseTkbDkh, getTkb, parseTkb, parseSelector, parseInitialFormData, generateTimeline, groupTimelineByDay, getStudentMark, parseStudentMark, getExamList, parseExamList }
