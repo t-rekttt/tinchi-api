@@ -478,11 +478,13 @@ parseStudentMark = (data) => {
 getExamList = (data = null, options = {}) => {
   let endpoint = `${API}/StudentViewExamList.aspx`;
 
+  let initialFormData = null;
+
   return request.get(endpoint, options)
     .then($ => {
       if (!data) return { data: $, options: parseSelector($) };
 
-      let initialFormData = parseInitialFormData($);
+      initialFormData = parseInitialFormData($);
       return request.post(endpoint, {
         ...options,
         form: {
