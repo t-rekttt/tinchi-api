@@ -482,10 +482,11 @@ getExamList = (data = null, options = {}) => {
     .then($ => {
       if (!data) return { data: $, options: parseSelector($) };
 
+      let initialFormData = parseInitialFormData($);
       return request.post(endpoint, {
         ...options,
         form: {
-          ...parseInitialFormData($),
+          ...initialFormData,
           ...data
         }
       })
@@ -516,7 +517,7 @@ getExamList = (data = null, options = {}) => {
         data.push(rows);
       });
 
-      return { data, options: parseSelector($) };
+      return { data, options: parseSelector($), initialFormData };
     });
 }
 
