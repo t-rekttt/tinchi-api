@@ -515,10 +515,14 @@ getExamList = (data = null, options = {}, initialFormData = null) => {
       .then($ => {
         if (!data) return { data: $, options: parseSelector($) };
 
+        let initialFormData = parseInitialFormData($);
+        delete initialFormData.btnList;
+        delete initialFormData.btnPrint;
+
         return request.post(endpoint, {
           ...options,
           form: {
-            ...parseInitialFormData($),
+            ...initialFormData,
             ...data
           }
         })
