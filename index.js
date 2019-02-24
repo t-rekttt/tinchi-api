@@ -190,47 +190,61 @@ parseTkbDkh = (data, options = {}) => {
   return data;
 }
 
-getTkb = (data = null, options = {}) => {
+getTkb = (data = null, options = {}, initialFormData = null) => {
   let endpoint = `${API}/Reports/Form/StudentTimeTable.aspx`;
 
-  return request.get(endpoint, options)
-    .then($ => {
-      if (!data) return { data: $, options: parseSelector($) };
+  if (!initialFormData) {
+    dataPromise = request.get(endpoint, options)
+      .then($ => {
+        if (!data) return { data: $, options: parseSelector($) };
 
-      return request.post(endpoint, {
-        ...options,
-        form: {
-          ...parseInitialFormData($),
-          ...data
-        }
-      })
-      .then(data => {
-        return { data }
+        return request.post(endpoint, {
+          ...options,
+          form: {
+            ...parseInitialFormData($),
+            ...data
+          }
+        })
+        .then(data => {
+          return { data }
+        });
       });
+  } else {
+    dataPromise = request.post(endpoint, {
+      ...options,
+      form: {
+        ...initialFormData,
+        ...data
+      }
     })
-    .then(({ data }) => {
-      let $ = data;
-      let tkb = $('#Table4').find('.tableborder');
-      tkb.find('br').replaceWith('\n');
-      // console.log(tkb.html());
-      let rows = tkb.find('tr');
-
-      data = [];
-
-      rows.each((i, elem) => {
-        cols = $(elem).find('td');
-
-        let rows = [];
-
-        cols.each((i, elem) => {
-          rows.push($(elem).text().trim());
-        }); 
-
-        data.push(rows);
-      });
-
-      return { data, options: parseSelector($) };
+    .then(data => {
+      return { data }
     });
+  }
+
+  return dataPromise.then(({ data }) => {
+    let $ = data;
+    let tkb = $('#Table4').find('.tableborder');
+    tkb.find('br').replaceWith('\n');
+    // console.log(tkb.html());
+    let rows = tkb.find('tr');
+
+    data = [];
+
+    rows.each((i, elem) => {
+      cols = $(elem).find('td');
+
+      let rows = [];
+
+      cols.each((i, elem) => {
+        rows.push($(elem).text().trim());
+      }); 
+
+      data.push(rows);
+    });
+
+    return { data, options: parseSelector($) };
+  });
 }
 
 parseTkb = (data) => {
@@ -410,47 +424,63 @@ groupTimelineByDay = (timeline) => {
   return result;
 }
 
-getStudentMark = (data = null, options = {}) => {
+getStudentMark = (data = null, options = {}, initialFormData = null) => {
   let endpoint = `${API}/StudentMark.aspx`;
 
-  return request.get(endpoint, options)
-    .then($ => {
-      if (!data) return { data: $, options: parseSelector($) };
+  let dataPromise = null;
 
-      return request.post(endpoint, {
-        ...options,
-        form: {
-          ...parseInitialFormData($),
-          ...data
-        }
-      })
-      .then(data => {
-        return { data }
+  if (!initialFormData) {
+    dataPromise = request.get(endpoint, options)
+      .then($ => {
+        if (!data) return { data: $, options: parseSelector($) };
+
+        return request.post(endpoint, {
+          ...options,
+          form: {
+            ...parseInitialFormData($),
+            ...data
+          }
+        })
+        .then(data => {
+          return { data }
+        });
       });
+  } else {
+    dataPromise = request.post(endpoint, {
+      ...options,
+      form: {
+        ...initialFormData,
+        ...data
+      }
     })
-    .then(({ data }) => {
-      let $ = data;
-      let tkb = $('#tblMarkDetail').find('.tableborder');
-      tkb.find('br').replaceWith('\n');
-      // console.log(tkb.html());
-      let rows = tkb.find('tr');
-
-      data = [];
-
-      rows.each((i, elem) => {
-        cols = $(elem).find('td');
-
-        let rows = [];
-
-        cols.each((i, elem) => {
-          rows.push($(elem).text().trim());
-        }); 
-
-        data.push(rows);
-      });
-
-      return { data, options: parseSelector($) };
+    .then(data => {
+      return { data }
     });
+  }
+
+  return dataPromise.then(({ data }) => {
+    let $ = data;
+    let tkb = $('#tblMarkDetail').find('.tableborder');
+    tkb.find('br').replaceWith('\n');
+    // console.log(tkb.html());
+    let rows = tkb.find('tr');
+
+    data = [];
+
+    rows.each((i, elem) => {
+      cols = $(elem).find('td');
+
+      let rows = [];
+
+      cols.each((i, elem) => {
+        rows.push($(elem).text().trim());
+      }); 
+
+      data.push(rows);
+    });
+
+    return { data, options: parseSelector($) };
+  });
 }
 
 parseStudentMark = (data) => {
@@ -475,50 +505,66 @@ parseStudentMark = (data) => {
   return data;
 }
 
-getExamList = (data = null, options = {}) => {
+getExamList = (data = null, options = {}, initialFormData = null) => {
   let endpoint = `${API}/StudentViewExamList.aspx`;
 
-  return request.get(endpoint, options)
-    .then($ => {
-      if (!data) return { data: $, options: parseSelector($) };
+  let dataPromise = null;
 
-      return request.post(endpoint, {
-        ...options,
-        form: {
-          ...parseInitialFormData($),
-          ...data
-        }
-      })
-      .then(data => {
-        return { data }
+  if (!initialFormData) {
+    dataPromise = request.get(endpoint, options)
+      .then($ => {
+        if (!data) return { data: $, options: parseSelector($) };
+
+        return request.post(endpoint, {
+          ...options,
+          form: {
+            ...parseInitialFormData($),
+            ...data
+          }
+        })
+        .then(data => {
+          return { data }
+        });
       });
+  } else {
+    dataPromise = request.post(endpoint, {
+      ...options,
+      form: {
+        ...initialFormData,
+        ...data
+      }
     })
-    .then(({ data }) => {
-      let initialFormData = parseInitialFormData(data);
-      let $ = data;
-      let tkb = $('#tblCourseList').find('tbody');
-
-      tkb.find('br').replaceWith('\n');
-
-      // console.log(tkb.html());
-      let rows = tkb.find('tr');
-
-      data = [];
-
-      rows.each((i, elem) => {
-        cols = $(elem).find('td');
-
-        let rows = [];
-
-        cols.each((i, elem) => {
-          rows.push($(elem).text().replace(/[\t\n]/g, '').trim());
-        }); 
-
-        data.push(rows);
-      });
-
-      return { data, options: parseSelector($), initialFormData };
+    .then(data => {
+      return { data }
     });
+  }
+  
+  return dataPromise.then(({ data }) => {
+    let initialFormData = parseInitialFormData(data);
+    let $ = data;
+    let tkb = $('#tblCourseList').find('tbody');
+
+    tkb.find('br').replaceWith('\n');
+
+    // console.log(tkb.html());
+    let rows = tkb.find('tr');
+
+    data = [];
+
+    rows.each((i, elem) => {
+      cols = $(elem).find('td');
+
+      let rows = [];
+
+      cols.each((i, elem) => {
+        rows.push($(elem).text().replace(/[\t\n]/g, '').trim());
+      }); 
+
+      data.push(rows);
+    });
+
+    return { data, options: parseSelector($), initialFormData };
+  });
 }
 
 parseExamList = (data) => {
