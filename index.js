@@ -90,8 +90,8 @@ login = (username, password, options = {}) => {
       }
     })
     .then(form => {
-      return request.post(endpoint, {form, simple: false});
-    })
+      return request.post(endpoint, {form, simple: false, ...options});
+    });
 }
 
 getTkbDkh = (options = {}) => {
