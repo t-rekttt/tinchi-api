@@ -197,10 +197,13 @@ getTkb = (data = null, options = {}, initialFormData = null) => {
       .then($ => {
         if (!data) return { data: $, options: parseSelector($) };
 
+        initialFormData = parseInitialFormData($);
+        delete initialFormData.btnView;
+
         return request.post(endpoint, {
           ...options,
           form: {
-            ...parseInitialFormData($),
+            ...initialFormData,
             ...data
           }
         })
