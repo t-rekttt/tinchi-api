@@ -17,17 +17,20 @@ request = request.defaults({
   },
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
-  }
+  },
+  proxy: 'http://localhost:8080',
+  strictSSL: false
 });
 
-init = (options = {}) => {
+init = async(options = {}) => {
   let jar = request.jar();
 
-  return request(API+'/', {
+  await request(API+'/', {
     ...options,
     jar
-  })
-  .then(res => jar);
+  });
+
+  return jar;
 }
 
 parseInitialFormData = ($) => {
@@ -55,16 +58,15 @@ parseSelector = ($) => {
 
   select.each((i, elem) => {
     let options = $(elem).find($('option'));
-    let cooked_options = [];
 
-    options.each((i, option) => {
+    let cooked_options = options.toArray().map(option => {
       option = $(option);
 
-      cooked_options.push({
+      return {
         value: option.attr('value'),
         text: option.text(),
         selected: option.attr('selected') ? true : false
-      });
+      };
     });
 
     data[$(elem).attr('name')] = cooked_options;
@@ -73,51 +75,53 @@ parseSelector = ($) => {
   return data;
 }
 
-login = (username, password, options = {}) => {
+login = async(username, password, options = {}) => {
   if (!options.shouldNotEncrypt) {
     password = md5(password);
     delete options.shouldNotEncrypt;
   }
 
-  let endpoint = `${API}/Login.aspx`
-  return request(endpoint, options)
-    .then(parseInitialFormData)
-    .then(data => {
-      return {
-        ...data,
-        txtUserName: username,
-        txtPassword: password,
-      }
-    })
-    .then(form => {
-      return request.post(endpoint, {form, simple: false, ...options});
-    });
+  let endpoint = `${API}/Login.aspx`;
+
+  let res = await request(endpoint, options);
+
+  let data = parseInitialFormData(res);
+
+  let form = {
+    ...data,
+    txtUserName: username,
+    txtPassword: password,
+  };
+
+  return await request.post(endpoint, {form, simple: false, ...options});
 }
 
-getTkbDkh = (options = {}) => {
-  return request.get(`${API}/StudyRegister/StudyRegister.aspx`, options)
-    .then($ => {
-      let tkb = $('#Table4').find('.tableborder');
-      tkb.find('br').replaceWith('\n');
-      // console.log(tkb.html());
-      let rows = tkb.find('tr');
+getTkbDkh = async(options = {}) => {
+  let endpoint = `${API}/StudyRegister/StudyRegister.aspx`;
 
-      let data = [];
+  let $ = await request.get(endpoint, options);
 
-      rows.each((i, elem) => {
-        cols = $(elem).find('td');
+  if (!options) options = parseSelector($);
 
-        let rows = [];
+  initialFormData = parseInitialFormData($);
 
-        cols.each((i, elem) => {
-          rows.push($(elem).text().trim());
-        }); 
+  delete initialFormData.btnView;
 
-        data.push(rows);
-      });
+  let tkb = $('#Table4').find('.tableborder');
 
-      return data;
+  tkb.find('br').replaceWith('\n');
+
+  let rows = tkb.find('tr');
+
+  let res = rows.toArray().map(elem => {
+    cols = $(elem).find('td');
+
+    return cols.toArray().map(elem1 => {
+      return $(elem1).text().trim();
     });
+  });
+
+  return { data: res, options: parseSelector($) };
 }
 
 parseTkbDkh = (data, options = {}) => {
@@ -189,64 +193,44 @@ parseTkbDkh = (data, options = {}) => {
   return data;
 }
 
-getTkb = (data = null, options = {}, initialFormData = null) => {
+getTkb = async(data = null, options = {}, initialFormData = null) => {
   let endpoint = `${API}/Reports/Form/StudentTimeTable.aspx`;
 
+  let $ = null;
+
   if (!initialFormData) {
-    dataPromise = request.get(endpoint, options)
-      .then($ => {
-        if (!data) return { data: $, options: parseSelector($) };
+    $ = await request.get(endpoint, options);
 
-        initialFormData = parseInitialFormData($);
-        delete initialFormData.btnView;
+    if (!options) options = parseSelector($);
 
-        return request.post(endpoint, {
-          ...options,
-          form: {
-            ...initialFormData,
-            ...data
-          }
-        })
-        .then(data => {
-          return { data }
-        });
-      });
-  } else {
-    dataPromise = request.post(endpoint, {
-      ...options,
-      form: {
-        ...initialFormData,
-        ...data
-      }
-    })
-    .then(data => {
-      return { data }
-    });
+    initialFormData = parseInitialFormData($);
+
+    delete initialFormData.btnView;
   }
 
-  return dataPromise.then(({ data }) => {
-    let $ = data;
-    let tkb = $('#Table4').find('.tableborder');
-    tkb.find('br').replaceWith('\n');
-    // console.log(tkb.html());
-    let rows = tkb.find('tr');
-
-    data = [];
-
-    rows.each((i, elem) => {
-      cols = $(elem).find('td');
-
-      let rows = [];
-
-      cols.each((i, elem) => {
-        rows.push($(elem).text().trim());
-      }); 
-
-      data.push(rows);
-    });
-
-    return { data, options: parseSelector($) };
+  $ = await request.post(endpoint, {
+    ...options,
+    form: {
+      ...initialFormData,
+      ...data
+    }
   });
+
+  let tkb = $('#Table4').find('.tableborder');
+
+  tkb.find('br').replaceWith('\n');
+
+  let rows = tkb.find('tr');
+
+  let res = rows.toArray().map(elem => {
+    cols = $(elem).find('td');
+
+    return cols.toArray().map(elem1 => {
+      return $(elem1).text().trim();
+    });
+  });
+
+  return { data: res, options: parseSelector($) };
 }
 
 parseTkb = (data) => {
@@ -278,41 +262,41 @@ parseTkb = (data) => {
       .map(tg => tg.trim())
       .join('|')
       .split('Từ ')
-      .filter(a => a)
+      .filter(a => a);
 
-    khoang_thoi_gian.map(thoi_gian => {
+    for (thoi_gian of khoang_thoi_gian) {
       let matches = date_range_pattern.exec(thoi_gian);
 
-      if (matches) {
-        let phases = [];
+      if (!matches) continue;
 
-        let [orig, start, end, g3, phase] = matches;
-        var match1;
+      let phases = [];
 
-        do {
-          match1 = time_pattern.exec(thoi_gian);
+      let [orig, start, end, g3, phase] = matches;
+      var match1;
 
-          if (match1) {
-            let [orig1, day, periods, type] = match1;
+      do {
+        match1 = time_pattern.exec(thoi_gian);
 
-            periods = periods.split(',');
+        if (match1) {
+          let [orig1, day, periods, type] = match1;
 
-            phases.push({
-              day,
-              periods,
-              type
-            });
-          };
-        } while (match1);
+          periods = periods.split(',');
 
-        ranges.push({
-          start,
-          end,
-          phases,
-          phase
-        });
-      }
-    })
+          phases.push({
+            day,
+            periods,
+            type
+          });
+        };
+      } while (match1);
+
+      ranges.push({
+        start,
+        end,
+        phases,
+        phase
+      });
+    };
 
     subject.thoi_gian = subject.thoi_gian.join('\n');
 
@@ -358,7 +342,6 @@ generateTimestamps = (start, end, weekday) => {
     start.add(1, 'week');
   }
 
-
   return res;
 }
 
@@ -374,12 +357,12 @@ generateClasses = (time_arr, start_period, end_period) => {
 generateTimeline = (schedule) => {
   let timeline = [];
 
-  schedule.map(subject => {
-    subject.ranges.map(range => {
-      range.phases.map(phase => {
+  for (subject of schedule) {
+    for (range of subject) {
+      for (phase of range.phases) {
         let timestamps = generateClasses(generateTimestamps(parseDate(range.start), parseDate(range.end), parseInt(phase.day)-2), parseInt(phase.periods[0]), parseInt(phase.periods[phase.periods.length-1]));
 
-        timestamps.map(timestamp => {
+        for (timestamp of timestamps) {
           let data = {
             timestamp,
             ...subject,
@@ -390,10 +373,10 @@ generateTimeline = (schedule) => {
           delete data.ranges;
 
           timeline.push(data);
-        });
-      });
-    });
-  });
+        };
+      };
+    };
+  };
 
   timeline.sort((a, b) => a.timestamp.start - b.timestamp.start);
   return timeline;
@@ -426,63 +409,44 @@ groupTimelineByDay = (timeline) => {
   return result;
 }
 
-getStudentMark = (data = null, options = {}, initialFormData = null) => {
+getStudentMark = async(data = null, options = {}, initialFormData = null) => {
   let endpoint = `${API}/StudentMark.aspx`;
 
-  let dataPromise = null;
+  let $ = null;
 
   if (!initialFormData) {
-    dataPromise = request.get(endpoint, options)
-      .then($ => {
-        if (!data) return { data: $, options: parseSelector($) };
+    $ = await request.get(endpoint, options);
 
-        return request.post(endpoint, {
-          ...options,
-          form: {
-            ...parseInitialFormData($),
-            ...data
-          }
-        })
-        .then(data => {
-          return { data }
-        });
-      });
-  } else {
-    dataPromise = request.post(endpoint, {
-      ...options,
-      form: {
-        ...initialFormData,
-        ...data
-      }
-    })
-    .then(data => {
-      return { data }
-    });
+    if (!options) options = parseSelector($);
+
+    initialFormData = parseInitialFormData($);
+
+    delete initialFormData.btnView;
   }
 
-  return dataPromise.then(({ data }) => {
-    let $ = data;
-    let tkb = $('#tblMarkDetail').find('.tableborder');
-    tkb.find('br').replaceWith('\n');
-    // console.log(tkb.html());
-    let rows = tkb.find('tr');
-
-    data = [];
-
-    rows.each((i, elem) => {
-      cols = $(elem).find('td');
-
-      let rows = [];
-
-      cols.each((i, elem) => {
-        rows.push($(elem).text().trim());
-      }); 
-
-      data.push(rows);
-    });
-
-    return { data, options: parseSelector($) };
+  $ = await request.post(endpoint, {
+    ...options,
+    form: {
+      ...initialFormData,
+      ...data
+    }
   });
+
+  let tkb = $('#tblMarkDetail').find('.tableborder');
+
+  tkb.find('br').replaceWith('\n');
+
+  let rows = tkb.find('tr');
+
+  let res = rows.toArray().map(elem => {
+    let cols = $(elem).find('td');
+
+    return cols.toArray().map(elem1 => {
+      return $(elem1).text().trim();
+    });
+  });
+
+  return { data: res, options: parseSelector($) };
 }
 
 parseStudentMark = (data) => {
@@ -507,70 +471,46 @@ parseStudentMark = (data) => {
   return data;
 }
 
-getExamList = (data = null, options = {}, initialFormData = null) => {
+getExamList = async(data = null, options = {}, initialFormData = null) => {
   let endpoint = `${API}/StudentViewExamList.aspx`;
 
-  let dataPromise = null;
+  let $ = null;
 
   if (!initialFormData) {
-    dataPromise = request.get(endpoint, options)
-      .then($ => {
-        if (!data) return { data: $, options: parseSelector($) };
+    $ = await request.get(endpoint, options);
 
-        let initialFormData = parseInitialFormData($);
-        delete initialFormData.btnList;
-        delete initialFormData.btnPrint;
+    if (!options) options = parseSelector($);
 
-        return request.post(endpoint, {
-          ...options,
-          form: {
-            ...initialFormData,
-            ...data
-          }
-        })
-        .then(data => {
-          return { data }
-        });
-      });
-  } else {
-    dataPromise = request.post(endpoint, {
-      ...options,
-      form: {
-        ...initialFormData,
-        ...data
-      }
-    })
-    .then(data => {
-      return { data }
-    });
+    initialFormData = parseInitialFormData($);
+
+    delete initialFormData.btnView;
   }
-  
-  return dataPromise.then(({ data }) => {
-    let initialFormData = parseInitialFormData(data);
-    let $ = data;
-    let tkb = $('#tblCourseList').find('tbody');
 
-    tkb.find('br').replaceWith('\n');
-
-    // console.log(tkb.html());
-    let rows = tkb.find('tr');
-
-    data = [];
-
-    rows.each((i, elem) => {
-      cols = $(elem).find('td');
-
-      let rows = [];
-
-      cols.each((i, elem) => {
-        rows.push($(elem).text().replace(/[\t\n]/g, '').trim());
-      }); 
-
-      data.push(rows);
-    });
-
-    return { data, options: parseSelector($), initialFormData };
+  $ = await request.post(endpoint, {
+    ...options,
+    form: {
+      ...initialFormData,
+      ...data
+    }
   });
+
+  initialFormData = parseInitialFormData($);
+
+  let tkb = $('#tblCourseList').find('tbody');
+
+  tkb.find('br').replaceWith('\n');
+
+  let rows = tkb.find('tr');
+
+  let res = rows.toArray().map(elem => {
+    cols = $(elem).find('td');
+
+    return cols.toArray().map(elem1 => {
+      return $(elem1).text().replace(/[\t\n]/g, '').trim();
+    });
+  });
+
+  return { data: res, options: parseSelector($), initialFormData };
 }
 
 parseExamList = (data) => {
