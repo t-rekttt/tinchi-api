@@ -3,6 +3,7 @@ let tinchi = require('../index.js');
 let { MemoryCookieStore } = require('tough-cookie');
 
 let { ma_sv, password } = process.env;
+console.log(JSON.stringify(process.env));
 const drpSemester = '3405451fd482446a96baaae42060a689';
 const drpHK = '2018_2019_2';
 
