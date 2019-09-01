@@ -1,4 +1,4 @@
-const period_board = {
+const periodBoard = {
   1: {
     start: {
       hour: 7,
@@ -151,4 +151,4 @@ const period_board = {
   },
 };
 
-module.exports = period_board;
+module.exports = periodBoard;
