@@ -27,8 +27,8 @@ request = request.defaults({
   },
   agentOptions: {
     secureProtocol: 'TLSv1_method'
-  }
-  // proxy: 'http://localhost:8080',
+  },
+  // proxy: 'http://localhost:8888',
   // strictSSL: false
 });
 

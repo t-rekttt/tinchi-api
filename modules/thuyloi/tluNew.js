@@ -1,10 +1,12 @@
 let _request = require('request-promise');
 
-const API_SERVER_URL = 'http://sv313.tlu.edu.vn:8092/education';
+const API_SERVER_URL = 'http://sinhvien.tlu.edu.vn:8099/education';
 
 _request = _request.defaults({
   baseUrl: API_SERVER_URL,
-  strictSSL: false
+  strictSSL: false,
+  // proxy: 'http://localhost:8888',
+  // strictSSL: false
 });
 
 class tluNew {
@@ -61,7 +63,7 @@ class tluNew {
   }
 
   async getStudentCourseSubjects(semesterId) {
-    return this.request.get('/StudentCourseSubject/student/0/' + semesterId);
+    return this.request.get('/StudentCourseSubject/studentLoginUser/' + semesterId);
   }
 
   async getSemesterWithFullsub() {

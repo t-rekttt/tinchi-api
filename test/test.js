@@ -118,7 +118,7 @@ describe('tluNew', () => {
 
       describe('getSemesters', async() => {
         it('should be able to get', async() => {
-          let data = await student.getCurrentUser();
+          let data = await student.getSemesters();
 
           assert(data);
         });
@@ -126,7 +126,7 @@ describe('tluNew', () => {
 
       describe('getCourseHour', async() => {
         it('should be able to get', async() => {
-          let data = await student.getCurrentUser();
+          let data = await student.getCourseHour();
 
           assert(data);
         });
@@ -134,7 +134,7 @@ describe('tluNew', () => {
 
       describe('getSchoolYears', async() => {
         it('should be able to get', async() => {
-          let data = await student.getCurrentUser();
+          let data = await student.getSchoolYears();
 
           assert(data);
         });
@@ -142,7 +142,7 @@ describe('tluNew', () => {
 
       describe('getStudentCourseSubjects', async() => {
         it('should be able to get', async() => {
-          let data = await student.getCurrentUser();
+          let data = await student.getStudentCourseSubjects('4');
 
           assert(data);
         });
@@ -150,7 +150,7 @@ describe('tluNew', () => {
 
       describe('getSemesterWithFullsub', async() => {
         it('should be able to get', async() => {
-          let data = await student.getCurrentUser();
+          let data = await student.getSemesterWithFullsub();
 
           assert(data);
         });
@@ -158,7 +158,7 @@ describe('tluNew', () => {
 
       describe('getCurrentSemesterInfo', async() => {
         it('should be able to get', async() => {
-          let data = await student.getCurrentUser();
+          let data = await student.getCurrentSemesterInfo();
 
           assert(data);
         });
