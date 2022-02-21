@@ -28,4 +28,4 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build --if-present
-    - run: npm test
+    - run: ma_sv=${{ secrets.MA_SV }} password=${{ secrets.PASSWORD }} username=${{ secrets.USERNAME }} password_new=${{ secrets.PASSWORD_NEW }} npm test
