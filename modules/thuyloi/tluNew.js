@@ -28,7 +28,7 @@ class tluNew {
   }
 
   async login(username, password) {
-    let res = await this.request.post('/public/login/ext/loginnew', {
+    let res = await this.request.post(`${API_SERVER_URL}/public/login/ext/loginnew`, {
       form: {
         username,
         password
