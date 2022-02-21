@@ -1,6 +1,6 @@
 let _request = require('request-promise');
 
-const API_SERVER_URL = 'http://sinhvien.tlu.edu.vn:8099/education';
+const API_SERVER_URL = 'http://sinhvien.tlu.edu.vn:8082/education';
 
 _request = _request.defaults({
   baseUrl: API_SERVER_URL,
@@ -28,13 +28,10 @@ class tluNew {
   }
 
   async login(username, password) {
-    let res = await this.request.post('oauth/token', {
+    let res = await this.request.post('/public/login/ext/loginnew', {
       form: {
-        client_id: 'education_client',
-        grant_type: 'password',
         username,
-        password,
-        client_secret: 'password'
+        password
       },
       json: true
     });
